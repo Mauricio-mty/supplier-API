@@ -47,9 +47,9 @@ export class ComprasService {
       INNER JOIN public.purchase_order_items AS po ON p.id = po.purchase_order_id
       INNER JOIN public.suppliers AS su ON p.supplier_id = su.id
       INNER JOIN public.products AS pro ON po.product_id = pro.id
-      LEFT JOIN public.bodega_evaluations AS ev ON po.id = ev.purchase_order_item_id
-      LEFT JOIN public.calidad_evaluations AS cal ON po.id = cal.purchase_order_item_id
-      LEFT JOIN public.compras_evaluations AS com ON po.id = com.purchase_order_item_id;
+      right JOIN public.bodega_evaluations AS ev ON po.id = ev.purchase_order_item_id
+      right JOIN public.calidad_evaluations AS cal ON po.id = cal.purchase_order_item_id
+      right JOIN public.compras_evaluations AS com ON po.id = com.purchase_order_item_id;
     `;
     return await this.dataSource.query(query);
   }
@@ -78,9 +78,9 @@ export class ComprasService {
       INNER JOIN public.purchase_order_items AS po ON p.id = po.purchase_order_id
       INNER JOIN public.suppliers AS su ON p.supplier_id = su.id
       INNER JOIN public.products AS pro ON po.product_id = pro.id
-      LEFT JOIN public.bodega_evaluations AS ev ON po.id = ev.purchase_order_item_id
-      LEFT JOIN public.calidad_evaluations AS cal ON po.id = cal.purchase_order_item_id
-      LEFT JOIN public.compras_evaluations AS com ON po.id = com.purchase_order_item_id
+      right JOIN public.bodega_evaluations AS ev ON po.id = ev.purchase_order_item_id
+      right JOIN public.calidad_evaluations AS cal ON po.id = cal.purchase_order_item_id
+      right JOIN public.compras_evaluations AS com ON po.id = com.purchase_order_item_id
       WHERE po.id = $1;
     `;
     const resultado = await this.dataSource.query(query, [orderItemId]);
