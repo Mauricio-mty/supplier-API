@@ -1,5 +1,5 @@
 // src/evaluations/bodega/dto/create-bodega.dto.ts
-import { IsUUID, IsBoolean, IsString, IsIn, IsOptional } from 'class-validator';
+import { IsUUID, IsBoolean, IsString, IsIn, IsOptional, IsNumber } from 'class-validator';
 
 export class CreateBodegaDto {
   @IsUUID('4', { message: 'El purchase_order_item_id debe ser un UUID versión 4 válido' })
@@ -10,6 +10,9 @@ export class CreateBodegaDto {
 
   @IsBoolean({ message: 'El campo equipo_proteccion debe ser un valor booleano' })
   equipo_proteccion!: boolean;
+  
+  @IsNumber({}, { message: 'El campo cantidad_recibida debe ser un número' })
+  cantidad_recibida!: number;
 
   @IsBoolean({ message: 'El campo identificacion_producto_ok debe ser un valor booleano' })
   identificacion_producto_ok!: boolean;

@@ -61,7 +61,7 @@ export class BodegaService {
   async findOneByOrderItem(orderItemId: string) {
     const query = `
       SELECT 
-          ev.id
+          ev.id,
           p.numero_orden_compra,
           p.fecha_entrega_prevista,
           pro.codigo AS codigo_producto,
@@ -69,6 +69,7 @@ export class BodegaService {
           su.nombre AS nombre_proveedor,
           po.id AS order_item_id,
           po.cantidad,
+          ev.cantidad_recibida,
           ev.fecha_ingreso,
           ev.limpieza,
           ev.equipo_proteccion,

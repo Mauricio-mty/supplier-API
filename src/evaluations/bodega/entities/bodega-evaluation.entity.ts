@@ -20,6 +20,9 @@ export class BodegaEvaluation {
   @Column({ default: false })
   libre_plagas!: boolean;
 
+  @Column({default: 0})
+  cantidad_recibida!: number;
+
   @Column({ length: 50 })
   estado_completitud!: 'Completo' | 'Incompleto' | 'Excedente';
 
