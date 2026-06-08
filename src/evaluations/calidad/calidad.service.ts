@@ -75,7 +75,7 @@ export class CalidadService {
       Inner join  public.suppliers as su on p.supplier_id=su.id
       inner join public.products as pro on po.product_id=pro.id
       RIGHT JOIN public.calidad_evaluations as ev on po.id=ev.purchase_order_item_id
-      WHERE po.id = $1;
+      WHERE ev.id = $1;
     `;
     const resultado = await this.dataSource.query(query, [orderItemId]);
 
