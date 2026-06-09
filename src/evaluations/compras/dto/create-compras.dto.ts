@@ -1,14 +1,16 @@
-import { IsUUID, IsBoolean, IsString, IsOptional } from 'class-validator';
+import { IsUUID, IsBoolean, IsString, IsOptional, IsEnum } from 'class-validator';
+import { CumpleEntregaRango,NivelServicio } from '../entities/compras-evaluation.entity';
 
 export class CreateComprasDto {
   @IsUUID('4', { message: 'El purchase_order_item_id debe ser un UUID versión 4 válido' })
   purchase_order_item_id!: string;
 
-  @IsBoolean({ message: 'El campo cumple_entrega debe ser un valor booleano' })
-  cumple_entrega!: boolean;
+  @IsEnum(CumpleEntregaRango, { message: 'El campo cumple_entrega debe ser un rango válido' })
+  cumple_entrega!: CumpleEntregaRango;
 
-  @IsBoolean({ message: 'El campo cumple_servicio debe ser un valor booleano' })
-  cumple_servicio!: boolean;
+
+  @IsEnum(NivelServicio, { message: 'El campo cumple_servicio debe ser un nivel de servicio válido' })
+  cumple_servicio!: NivelServicio;
 
   @IsBoolean({ message: 'El campo producto_finalizado debe ser un valor booleano' })
   producto_finalizado!: boolean; // 💡 El interruptor que cierra el flujo completo
