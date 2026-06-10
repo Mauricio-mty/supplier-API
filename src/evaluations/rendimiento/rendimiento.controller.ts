@@ -16,7 +16,11 @@ export class RendimientosController {
   async getAll(): Promise<Rendimiento[]> {
     return this.rendimientosService.getAll();
   }
-
+  
+  @Get('data')
+  async getData() {
+    return this.rendimientosService.getData();
+  }
   @Get(':id')
   async getById(@Param('id') id: string): Promise<Rendimiento> {
     return this.rendimientosService.getById(id);
