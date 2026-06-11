@@ -4,6 +4,7 @@ import { Repository, DataSource } from 'typeorm';
 import { ComprasEvaluation } from './entities/compras-evaluation.entity';
 import { CreateComprasDto } from './dto/create-compras.dto';
 import {UpdateComprasDto} from './dto/update-compras.dto';
+import { RendimientosService } from '../rendimiento/rendimiento.service';
 
 
 @Injectable()
@@ -12,6 +13,7 @@ export class ComprasService {
     @InjectRepository(ComprasEvaluation)
     private readonly comprasRepository: Repository<ComprasEvaluation>,
     private readonly dataSource: DataSource,
+    private readonly rendimientosService: RendimientosService,
   ) {}
 
   // 💾 CARGA DE DATOS: Cierre definitivo del ciclo comercial
@@ -20,7 +22,13 @@ export class ComprasService {
       ...createComprasDto,
       evaluado_por: usuarioNombre, // 💡 Inyectado dinámicamente desde el JWT
     });
-    return await this.comprasRepository.save(nuevaEvaluacion);
+    const guardado = await this.comprasRepository.save(nuevaEvaluacion);
+
+    if (guardado.producto_finalizado) {
+      await this.rendimientosService.createFromOrderItemId(guardado.purchase_order_item_id);
+    }
+
+    return guardado;
   }
 
   // 🔍 CONSULTA GENERAL: Historial completo para el panel de Compras
@@ -103,7 +111,13 @@ export class ComprasService {
       evaluado_por: usuarioNombre,
     });
 
-    return await this.comprasRepository.save(evaluacionEditada);
+    const guardado = await this.comprasRepository.save(evaluacionEditada);
+
+    if (guardado.producto_finalizado) {
+      await this.rendimientosService.createFromOrderItemId(guardado.purchase_order_item_id);
+    }
+
+    return guardado;
   }
 
   async findTableRecords(): Promise<ComprasEvaluation[]>{

@@ -2,7 +2,7 @@ import {Entity,PrimaryGeneratedColumn,Column,CreateDateColumn} from 'typeorm'
 
 @Entity('rendimientos',{schema:'public'})
 export class Rendimiento{
-    @PrimaryGeneratedColumn('uuid');
+    @PrimaryGeneratedColumn('uuid')
     id!:string;
      
     @Column('uuid')

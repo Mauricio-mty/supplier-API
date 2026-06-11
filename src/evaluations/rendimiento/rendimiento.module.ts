@@ -8,5 +8,6 @@ import { Rendimiento } from './entities/rendimiento.entity';
   imports: [TypeOrmModule.forFeature([Rendimiento])],
   controllers: [RendimientosController],
   providers: [RendimientosService],
+  exports: [RendimientosService],
 })
 export class RendimientosModule {}

@@ -65,12 +65,12 @@ Base path: **`/compras-evaluations`**
 
 **Body** (`CreateComprasDto`):
 - `purchase_order_item_id` (UUID v4)
-- `cumple_entrega` (boolean)
-- `cumple_servicio` (boolean)
+- `cumple_entrega` (`0-3`, `4-6`, `7-9`, `10-12`, `13-15`, `15+`)
+- `cumple_servicio` (`Excelente`, `Regular`, `Malo`)
 - `producto_finalizado` (boolean)
 - `comentarios` (string, opcional)
 
-**Response:** `ComprasEvaluation` (guardada en `compras_evaluations`).
+**Response:** `ComprasEvaluation` (guardada en `compras_evaluations`). Si `producto_finalizado` es `true`, el backend genera o actualiza automáticamente el registro correspondiente en `rendimientos`.
 
 ### 2) Listado historial (panel)
 `GET /compras-evaluations`
