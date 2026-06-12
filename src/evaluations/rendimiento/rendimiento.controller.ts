@@ -7,10 +7,17 @@ import { Rendimiento } from './entities/rendimiento.entity';
 export class RendimientosController {
   constructor(private readonly rendimientosService: RendimientosService) {}
 
+  /**
+   * Crea un registro de rendimiento manualmente.
+   *
+   * Nota: el flujo principal suele ser automático desde Compras cuando
+   * `producto_finalizado` es `true` (ver `ComprasService`).
+   */
   @Post('create')
   async create(@Body() createRendimientoDto: CreateRendimientoDTo): Promise<Rendimiento> {
     return this.rendimientosService.create(createRendimientoDto);
   }
+
 
   @Get()
   async getAll(): Promise<Rendimiento[]> {

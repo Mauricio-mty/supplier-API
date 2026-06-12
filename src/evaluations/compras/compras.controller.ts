@@ -1,7 +1,8 @@
 import { Controller, Post, Body, UseGuards, Req, Get, Param,Put, ParseUUIDPipe } from '@nestjs/common';
 import { ComprasService } from './compras.service';
 import { CreateComprasDto } from './dto/create-compras.dto';
-import { JwtAuthGuard } from '../../auth/guards/jwt-auth-guard'; // Ajusta la ruta si es necesario
+import { JwtAuthGuard } from '../../auth/guards/jwt-auth-guard';
+// Nota: este controller requiere JWT para acceder a endpoints de evaluación.
 import { UpdateComprasDto } from './dto/update-compras.dto';
 
 

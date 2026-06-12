@@ -13,7 +13,12 @@ export class CalidadService {
     private readonly dataSource: DataSource,
   ) {}
 
-  // 💾 CARGA DE DATOS: Guardar dictamen de calidad
+  /**
+   * 💾 CARGA DE DATOS: guardar dictamen de calidad.
+   *
+   * Persiste la evaluación en `calidad_evaluations` y registra `evaluado_por`.
+   */
+
   async create(createCalidadDto: CreateCalidadDto, usuarioNombre: string): Promise<CalidadEvaluation> {
     const nuevaEvaluacion = this.calidadRepository.create({
       ...createCalidadDto,

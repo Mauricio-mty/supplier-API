@@ -1,7 +1,8 @@
 import { Controller, Post, Body, UseGuards, Req, Get, Param,Put, ParseUUIDPipe } from '@nestjs/common';
 import { CalidadService } from './calidad.service';
 import { CreateCalidadDto } from './dto/create-calidad.dto';
-import { JwtAuthGuard } from '../../auth/guards/jwt-auth-guard'; // Ajusta la ruta relativa si es necesario
+import { JwtAuthGuard } from '../../auth/guards/jwt-auth-guard';
+// Nota: este controller requiere JWT para acceder a endpoints de evaluación.
 import {UpdateCalidadDto} from './dto/update-calidad.dto'
 
 

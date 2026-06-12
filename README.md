@@ -185,7 +185,17 @@ curl -X POST http://localhost:3000/compras-evaluations \
 
 ---
 
+## Flujo entre módulos (resumen)
+- Un usuario crea/actualiza evaluaciones en:
+  - `POST /compras-evaluations` (cierre comercial)
+  - `POST /bodega-evaluations` (recepción/validaciones)
+  - `POST /calidad-evaluations` (dictamen de calidad)
+- Cuando en **Compras** `producto_finalizado` es `true`, el backend ejecuta el cálculo y crea/actualiza el registro en `rendimientos`.
+
+---
+
 ## Scripts
+
 ```bash
 npm install
 npm run start

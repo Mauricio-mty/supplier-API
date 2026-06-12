@@ -1,7 +1,8 @@
 // src/evaluations/bodega/bodega.controller.ts
 import { Controller, Post, Body, UseGuards, Req, Get, Param,Put, ParseUUIDPipe } from '@nestjs/common';
 import { BodegaService } from './bodega.service';
-import { CreateBodegaDto } from './dto/create-bodega.dto'; // 👈 Importamos el DTO
+import { CreateBodegaDto } from './dto/create-bodega.dto';
+// Nota: este controller requiere JWT para acceder a endpoints de evaluación.
 import { JwtAuthGuard } from '../../auth/guards/jwt-auth-guard';
 import { UpdateBodegaDto } from './dto/update-bodega.dto';
 

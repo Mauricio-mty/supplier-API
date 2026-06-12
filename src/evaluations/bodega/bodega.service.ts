@@ -13,7 +13,12 @@ export class BodegaService {
     private readonly dataSource: DataSource, // 💡 Inyectamos el DataSource global
   ) {}
 
-  // 📝 MÉTODO DE CARGA (El que ya teníamos)
+  /**
+   * Crea una evaluación de bodega.
+   *
+   * Registra quién la evaluó (`evaluado_por`) y persiste los campos recibidos.
+   */
+
   async create(createBodegaDto: CreateBodegaDto, usuarioNombre: string): Promise<BodegaEvaluation> {
     const nuevaEvaluacion = this.bodegaRepository.create({
       ...createBodegaDto,

@@ -16,7 +16,13 @@ export class ComprasService {
     private readonly rendimientosService: RendimientosService,
   ) {}
 
-  // 💾 CARGA DE DATOS: Cierre definitivo del ciclo comercial
+  /**
+   * 💾 CARGA DE DATOS: cierre comercial definitivo.
+   *
+   * - Guarda la evaluación en `compras_evaluations`.
+   * - Si `producto_finalizado` es `true`, dispara (crea/actualiza) el cálculo en `rendimientos`.
+   */
+
   async create(createComprasDto: CreateComprasDto, usuarioNombre: string): Promise<ComprasEvaluation> {
     const nuevaEvaluacion = this.comprasRepository.create({
       ...createComprasDto,
