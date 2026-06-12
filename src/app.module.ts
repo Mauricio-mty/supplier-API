@@ -16,20 +16,25 @@ import { RendimientosModule } from './evaluations/rendimiento/rendimiento.module
     }),
     
     // 2. Configura TypeORM de forma asíncrona usando ConfigService
-    TypeOrmModule.forRootAsync({
+        TypeOrmModule.forRootAsync({
       imports: [ConfigModule],
       inject: [ConfigService],
-      useFactory: (configService: ConfigService) => ({
-        type: 'postgres',
-        host: configService.get<string>('DB_HOST'),
-        port: configService.get<number>('DB_PORT'),
-        username: configService.get<string>('DB_USERNAME'),
-        password: configService.get<string>('DB_PASSWORD'),
-        database: configService.get<string>('DB_NAME'),
+      useFactory: (configService: ConfigService) => {
+        const dbUrl = configService.get<string>('DATABASE_URL');
         
-        autoLoadEntities: true, // Mapea tus archivos .entity.ts para hacer consultas
-        synchronize: false,    // 🔒 CRÍTICO: No creará ni modificará ninguna tabla en la BD
-      }),
+        return {
+          type: 'postgres',
+          url: dbUrl,
+          host: !dbUrl ? configService.get<string>('DB_HOST') : undefined,
+          port: !dbUrl ? configService.get<number>('DB_PORT') : undefined,
+          username: !dbUrl ? configService.get<string>('DB_USERNAME') : undefined,
+          password: !dbUrl ? configService.get<string>('DB_PASSWORD') : undefined,
+          database: !dbUrl ? configService.get<string>('DB_NAME') : undefined,
+          
+          autoLoadEntities: true,
+          synchronize: false,
+        };
+      },
     }),
     
     AuthModule,

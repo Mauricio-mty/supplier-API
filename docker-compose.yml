@@ -7,10 +7,6 @@ services:
     ports:
       - "3001:3000"
     environment:
-      - DB_HOST=hermeldb # Cambia según tu configuración
-      - DB_PORT=5001
-      - DB_USERNAME=hermel
-      - DB_PASSWORD="h33r#M91"
-      - DB_DATABASE=requisiciones
+      - DATABASE_URL=postgres://hermel:h33%23M91@hermeldb:5001/requisiciones
       - JWT_SECRET=DclTLrmSKHFovBCUvVflWTNg1ZnlCXDXhM1Pr5QuEVZ
     restart: always
