@@ -182,7 +182,8 @@ export class RendimientosService {
 	re.bodega_performance,
 	re.calidad_performance,
 	re.compras_performance,
-	re.total_performance
+	re.total_performance,
+  re.date_performance
 FROM public.rendimientos as re
 INNER JOIN public.purchase_order_items as it On re.purchase_order_item_id = it.id
 INNER JOIN public.products as pro On it.product_id=pro.id
