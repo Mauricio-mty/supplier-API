@@ -7,6 +7,6 @@ services:
     ports:
       - "3001:3000"
     environment:
-      - DATABASE_URL=postgres://hermel:h33%23M91@hermeldb:5001/requisiciones
+      - DATABASE_URL=postgresql://hermel:h33r%23M91@host.docker.internal:5001/requisiciones
       - JWT_SECRET=DclTLrmSKHFovBCUvVflWTNg1ZnlCXDXhM1Pr5QuEVZ
     restart: always
