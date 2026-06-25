@@ -1,10 +1,16 @@
-import { Controller, Post, Get, Param, Body } from '@nestjs/common';
+import { Controller, Post, Get, Param, Body, UseGuards } from '@nestjs/common';
 import { RendimientosService } from './rendimiento.service';
 import { CreateRendimientoDTo } from './dto/create-rendimiento.dto';
 import { Rendimiento } from './entities/rendimiento.entity';
+import { JwtAuthGuard } from '../../auth/guards/jwt-auth-guard';
+import { RolesGuard } from '../../auth/guards/roles.guard';
+import { Roles } from '../../auth/decorators/roles.decorator';
+import { UserRole } from '../../auth/enums/role.enum';
 
 @Controller('rendimientos')
+@UseGuards(JwtAuthGuard, RolesGuard)
 export class RendimientosController {
+
   constructor(private readonly rendimientosService: RendimientosService) {}
 
   /**
