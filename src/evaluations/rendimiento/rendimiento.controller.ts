@@ -1,4 +1,12 @@
-import { Controller, Post, Get, Param, Body, UseGuards } from '@nestjs/common';
+import {
+  Controller,
+  Post,
+  Get,
+  Param,
+  Body,
+  UseGuards,
+  ParseUUIDPipe,
+} from '@nestjs/common';
 import { RendimientosService } from './rendimiento.service';
 import { CreateRendimientoDTo } from './dto/create-rendimiento.dto';
 import { Rendimiento } from './entities/rendimiento.entity';
@@ -10,7 +18,6 @@ import { UserRole } from '../../auth/enums/role.enum';
 @Controller('rendimientos')
 @UseGuards(JwtAuthGuard, RolesGuard)
 export class RendimientosController {
-
   constructor(private readonly rendimientosService: RendimientosService) {}
 
   /**
@@ -20,22 +27,24 @@ export class RendimientosController {
    * `producto_finalizado` es `true` (ver `ComprasService`).
    */
   @Post('create')
-  async create(@Body() createRendimientoDto: CreateRendimientoDTo): Promise<Rendimiento> {
+  async create(
+    @Body() createRendimientoDto: CreateRendimientoDTo,
+  ): Promise<Rendimiento> {
     return this.rendimientosService.create(createRendimientoDto);
   }
-
 
   @Get()
   async getAll(): Promise<Rendimiento[]> {
     return this.rendimientosService.getAll();
   }
-  
+
   @Get('data')
   async getData() {
     return this.rendimientosService.getData();
   }
+
   @Get(':id')
-  async getById(@Param('id') id: string): Promise<Rendimiento> {
+  async getById(@Param('id', ParseUUIDPipe) id: string): Promise<Rendimiento> {
     return this.rendimientosService.getById(id);
   }
 }

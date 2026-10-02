@@ -15,6 +15,6 @@ export class User {
   @Column({ length: 50 })
   rol!: string; // 👈 Ideal para controlar accesos por departamento
 
-  @Column({ length: 255 })
+  @Column({ length: 255, select: false })
   password!: string;
 }

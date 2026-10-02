@@ -1,4 +1,9 @@
-import { Entity, PrimaryGeneratedColumn, Column, CreateDateColumn } from 'typeorm';
+import {
+  Entity,
+  PrimaryGeneratedColumn,
+  Column,
+  CreateDateColumn,
+} from 'typeorm';
 
 @Entity('calidad_evaluations', { schema: 'public' })
 export class CalidadEvaluation {
@@ -17,7 +22,10 @@ export class CalidadEvaluation {
   @Column('text')
   accion_tomada!: string;
 
-  @CreateDateColumn({ type: 'timestamp with time zone', default: () => 'CURRENT_TIMESTAMP' })
+  @CreateDateColumn({
+    type: 'timestamp with time zone',
+    nullable: true,
+  })
   fecha_evaluacion!: Date;
 
   @Column({ default: false })

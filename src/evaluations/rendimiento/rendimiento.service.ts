@@ -3,7 +3,10 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Repository, DataSource } from 'typeorm';
 import { Rendimiento } from './entities/rendimiento.entity';
 import { CreateRendimientoDTo } from './dto/create-rendimiento.dto';
-import { CumpleEntregaRango, NivelServicio } from '../compras/entities/compras-evaluation.entity';
+import {
+  CumpleEntregaRango,
+  NivelServicio,
+} from '../compras/entities/compras-evaluation.entity';
 
 /**
  * Fuente en memoria con las evaluaciones necesarias para calcular el rendimiento.
@@ -37,8 +40,11 @@ export class RendimientosService {
   /**
    * Crea un registro de rendimiento de forma manual.
    */
-  async create(createRendimientoDto: CreateRendimientoDTo): Promise<Rendimiento> {
-    const rendimiento = this.rendimientosRepository.create(createRendimientoDto);
+  async create(
+    createRendimientoDto: CreateRendimientoDTo,
+  ): Promise<Rendimiento> {
+    const rendimiento =
+      this.rendimientosRepository.create(createRendimientoDto);
     return this.rendimientosRepository.save(rendimiento);
   }
 
@@ -50,8 +56,11 @@ export class RendimientosService {
    * 2) Calcula los sub-scores y el total.
    * 3) Upsert lógico: si existe, actualiza; si no existe, crea.
    */
-  async createFromOrderItemId(purchaseOrderItemId: string): Promise<Rendimiento> {
-    const performanceSource = await this.getPerformanceSource(purchaseOrderItemId);
+  async createFromOrderItemId(
+    purchaseOrderItemId: string,
+  ): Promise<Rendimiento> {
+    const performanceSource =
+      await this.getPerformanceSource(purchaseOrderItemId);
     const rendimientoDto = this.buildRendimientoDto(performanceSource);
 
     const existingRendimiento = await this.rendimientosRepository.findOne({
@@ -108,9 +117,7 @@ export class RendimientosService {
       LIMIT 1;
     `;
 
-    const resultado = (await this.dataSource.query(query, [purchaseOrderItemId])) as
-      | PerformanceSourceRow[]
-      | undefined;
+    const resultado = await this.dataSource.query(query, [purchaseOrderItemId]);
 
     if (!resultado || resultado.length === 0) {
       throw new NotFoundException(
@@ -208,7 +215,9 @@ export class RendimientosService {
   /**
    * Score de entrega según el rango.
    */
-  private calculateEntregaScore(cumpleEntrega: CumpleEntregaRango | null): number {
+  private calculateEntregaScore(
+    cumpleEntrega: CumpleEntregaRango | null,
+  ): number {
     const entregaScoreMap: Record<CumpleEntregaRango, number> = {
       [CumpleEntregaRango.RANGO_0_3]: 60,
       [CumpleEntregaRango.RANGO_4_6]: 50,
@@ -282,4 +291,3 @@ export class RendimientosService {
     return rendimiento;
   }
 }
-

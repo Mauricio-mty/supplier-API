@@ -1,4 +1,9 @@
-import { Entity, PrimaryGeneratedColumn, Column, CreateDateColumn } from 'typeorm';
+import {
+  Entity,
+  PrimaryGeneratedColumn,
+  Column,
+  CreateDateColumn,
+} from 'typeorm';
 
 export enum CumpleEntregaRango {
   RANGO_0_3 = '0-3',
@@ -6,14 +11,13 @@ export enum CumpleEntregaRango {
   RANGO_7_9 = '7-9',
   RANGO_10_12 = '10-12',
   RANGO_13_15 = '13-15',
-  RANGO_MAS_15 = '15+'
+  RANGO_MAS_15 = '15+',
 }
 
-
-export enum  NivelServicio{
-  EXCELENTE='Excelente',
-  REGULAR='Regular',
-  MALO='Malo'
+export enum NivelServicio {
+  EXCELENTE = 'Excelente',
+  REGULAR = 'Regular',
+  MALO = 'Malo',
 }
 
 @Entity('compras_evaluations', { schema: 'public' })
@@ -24,25 +28,23 @@ export class ComprasEvaluation {
   @Column('uuid')
   purchase_order_item_id!: string;
 
-@Column({
-    type: 'enum',
-    enum: CumpleEntregaRango,
-    default: null // Puedes cambiar el default según tu lógica
+  @Column({
+    type: 'varchar',
+    length: 20,
+    default: CumpleEntregaRango.RANGO_0_3,
   })
   cumple_entrega!: CumpleEntregaRango;
 
-
-  @Column({
-    type:'enum',
-    enum:NivelServicio, 
-    default: false 
-  })
+  @Column({ type: 'varchar', length: 20, default: NivelServicio.EXCELENTE })
   cumple_servicio!: NivelServicio;
 
   @Column({ default: false })
   producto_finalizado!: boolean;
 
-  @CreateDateColumn({ type: 'timestamp with time zone', default: () => 'CURRENT_TIMESTAMP' })
+  @CreateDateColumn({
+    type: 'timestamp with time zone',
+    nullable: true,
+  })
   fecha_evaluacion!: Date;
 
   @Column({ length: 255, nullable: true })

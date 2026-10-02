@@ -1,4 +1,10 @@
-import { Entity, PrimaryGeneratedColumn, Column, CreateDateColumn } from 'typeorm';
+import {
+  Entity,
+  PrimaryGeneratedColumn,
+  Column,
+  CreateDateColumn,
+} from 'typeorm';
+import { numericTransformer } from '../../../common/transformers/numeric.transformer';
 
 @Entity('bodega_evaluations', { schema: 'public' })
 export class BodegaEvaluation {
@@ -20,13 +26,22 @@ export class BodegaEvaluation {
   @Column({ default: false })
   libre_plagas!: boolean;
 
-  @Column({default: 0})
+  @Column({
+    type: 'numeric',
+    precision: 10,
+    scale: 2,
+    default: 0,
+    transformer: numericTransformer,
+  })
   cantidad_recibida!: number;
 
   @Column({ length: 50 })
   estado_completitud!: 'Completo' | 'Incompleto' | 'Excedente';
 
-  @CreateDateColumn({ type: 'timestamp with time zone', default: () => 'CURRENT_TIMESTAMP' })
+  @CreateDateColumn({
+    type: 'timestamp with time zone',
+    nullable: true,
+  })
   fecha_ingreso!: Date;
 
   @Column({ default: false })

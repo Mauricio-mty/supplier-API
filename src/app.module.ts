@@ -12,31 +12,37 @@ import { RendimientosModule } from './evaluations/rendimiento/rendimiento.module
   imports: [
     // 1. Carga las variables de entorno globalmente en la app
     ConfigModule.forRoot({
-      isGlobal: true, 
+      isGlobal: true,
     }),
-    
+
     // 2. Configura TypeORM de forma asíncrona usando ConfigService
-        TypeOrmModule.forRootAsync({
+    TypeOrmModule.forRootAsync({
       imports: [ConfigModule],
       inject: [ConfigService],
       useFactory: (configService: ConfigService) => {
         const dbUrl = configService.get<string>('DATABASE_URL');
-        
+
         return {
           type: 'postgres',
           url: dbUrl,
           host: !dbUrl ? configService.get<string>('DB_HOST') : undefined,
-          port: !dbUrl ? configService.get<number>('DB_PORT') : undefined,
-          username: !dbUrl ? configService.get<string>('DB_USERNAME') : undefined,
-          password: !dbUrl ? configService.get<string>('DB_PASSWORD') : undefined,
+          port: !dbUrl
+            ? Number(configService.get<string>('DB_PORT'))
+            : undefined,
+          username: !dbUrl
+            ? configService.get<string>('DB_USERNAME')
+            : undefined,
+          password: !dbUrl
+            ? configService.get<string>('DB_PASSWORD')
+            : undefined,
           database: !dbUrl ? configService.get<string>('DB_NAME') : undefined,
-          
+
           autoLoadEntities: true,
           synchronize: false,
         };
       },
     }),
-    
+
     AuthModule,
     UsersModule,
     BodegaModule,

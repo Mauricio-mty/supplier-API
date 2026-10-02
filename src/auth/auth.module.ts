@@ -15,11 +15,14 @@ import { JwtStrategy } from './strategies/jwt.strategy';
     JwtModule.registerAsync({
       imports: [ConfigModule],
       inject: [ConfigService],
-      useFactory: (configService: ConfigService): JwtModuleOptions => ({ // 💡 Forzamos el tipo de retorno aquí
-        secret: configService.get<string>('JWT_SECRET') || 'secretKeyDeRespaldo', // 💡 Respaldo si es undefined
+      useFactory: (configService: ConfigService): JwtModuleOptions => ({
+        // 💡 Forzamos el tipo de retorno aquí
+        secret:
+          configService.get<string>('JWT_SECRET') || 'secretKeyDeRespaldo', // 💡 Respaldo si es undefined
         signOptions: {
           // Usamos "as any" o aseguramos un string directo para saltar la restricción estricta de StringValue
-          expiresIn: (configService.get<string>('JWT_EXPIRES_IN') || '8h') as any, 
+          expiresIn: (configService.get<string>('JWT_EXPIRES_IN') ||
+            '8h') as any,
         },
       }),
     }),

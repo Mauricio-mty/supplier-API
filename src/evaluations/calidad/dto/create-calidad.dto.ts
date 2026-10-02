@@ -1,16 +1,26 @@
-import { IsUUID, IsBoolean, IsString, IsNotEmpty, IsOptional, IsDate } from 'class-validator';
+import {
+  IsUUID,
+  IsBoolean,
+  IsString,
+  IsNotEmpty,
+  IsOptional,
+  IsDate,
+} from 'class-validator';
 import { Type } from 'class-transformer';
 
 export class CreateCalidadDto {
-  @IsUUID('4', { message: 'El purchase_order_item_id debe ser un UUID versión 4 válido' })
+  @IsUUID('4', {
+    message: 'El purchase_order_item_id debe ser un UUID versión 4 válido',
+  })
   purchase_order_item_id!: string;
 
   @IsBoolean({ message: 'El campo cumple_calidad debe ser un valor booleano' })
   cumple_calidad!: boolean;
 
+  @IsOptional()
   @IsDate({ message: 'La fecha de evaluación debe ser una fecha válida' })
   @Type(() => Date)
-  fecha_evaluacion!: Date;
+  fecha_evaluacion?: Date;
 
   @IsBoolean({ message: 'El campo cumple_norma debe ser un valor booleano' })
   cumple_norma!: boolean;

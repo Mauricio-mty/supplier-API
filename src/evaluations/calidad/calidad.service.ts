@@ -3,7 +3,7 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Repository, DataSource } from 'typeorm';
 import { CalidadEvaluation } from './entities/calidad-evaluation.entity';
 import { CreateCalidadDto } from './dto/create-calidad.dto';
- import { UpdateCalidadDto } from './dto/update-calidad.dto';
+import { UpdateCalidadDto } from './dto/update-calidad.dto';
 
 @Injectable()
 export class CalidadService {
@@ -19,10 +19,15 @@ export class CalidadService {
    * Persiste la evaluación en `calidad_evaluations` y registra `evaluado_por`.
    */
 
-  async create(createCalidadDto: CreateCalidadDto, usuarioNombre: string): Promise<CalidadEvaluation> {
+  async create(
+    createCalidadDto: CreateCalidadDto,
+    usuarioNombre: string,
+  ): Promise<CalidadEvaluation> {
     const nuevaEvaluacion = this.calidadRepository.create({
       ...createCalidadDto,
       evaluado_por: usuarioNombre, // 💡 Inyectado automáticamente desde el JWT
+      // La columna no tiene DEFAULT en la BD, se rellena aquí.
+      fecha_evaluacion: createCalidadDto.fecha_evaluacion ?? new Date(),
     });
     return await this.calidadRepository.save(nuevaEvaluacion);
   }
@@ -38,7 +43,7 @@ export class CalidadService {
           pro.nombre AS nombre_producto,
           su.nombre AS nombre_proveedor,
           po.id AS order_item_id,
-          po.cantidad,
+          po.cantidad::float8 AS cantidad,
           ev.estado_completitud AS bodega_completitud,
           ev.ingreso_aprobado AS bodega_ingreso_aprobado,
           cal.cumple_calidad,
@@ -50,8 +55,8 @@ export class CalidadService {
       INNER JOIN public.purchase_order_items AS po ON p.id = po.purchase_order_id
       INNER JOIN public.suppliers AS su ON p.supplier_id = su.id
       INNER JOIN public.products AS pro ON po.product_id = pro.id
-      right JOIN public.bodega_evaluations AS ev ON po.id = ev.purchase_order_item_id
-      right JOIN public.calidad_evaluations AS cal ON po.id = cal.purchase_order_item_id;
+      LEFT JOIN public.bodega_evaluations AS ev ON po.id = ev.purchase_order_item_id
+      LEFT JOIN public.calidad_evaluations AS cal ON po.id = cal.purchase_order_item_id;
     `;
     return await this.dataSource.query(query);
   }
@@ -67,7 +72,7 @@ export class CalidadService {
       pro.codigo as codigo_producto,
       pro.nombre as nombre_producto,
       po.id as order_item_id,
-      po.cantidad,
+      po.cantidad::float8 as cantidad,
       ev.fecha_evaluacion,
       ev.cumple_calidad,
       ev.cumple_norma,
@@ -79,22 +84,29 @@ export class CalidadService {
       Inner join public.purchase_order_items as po ON p.id=po.purchase_order_id
       Inner join  public.suppliers as su on p.supplier_id=su.id
       inner join public.products as pro on po.product_id=pro.id
-      RIGHT JOIN public.calidad_evaluations as ev on po.id=ev.purchase_order_item_id
-      WHERE ev.id = $1;
+      LEFT JOIN public.calidad_evaluations as ev on po.id=ev.purchase_order_item_id
+      WHERE po.id = $1;
     `;
     const resultado = await this.dataSource.query(query, [orderItemId]);
 
     if (!resultado || resultado.length === 0) {
-      throw new NotFoundException(`No se encontró ningún ítem de orden con el ID: ${orderItemId}`);
+      throw new NotFoundException(
+        `No se encontró ningún ítem de orden con el ID: ${orderItemId}`,
+      );
     }
     return resultado[0];
   }
 
-
-  async update(id: string, updateCalidadDto: UpdateCalidadDto, usuarioNombre: string): Promise<CalidadEvaluation> {
+  async update(
+    id: string,
+    updateCalidadDto: UpdateCalidadDto,
+    usuarioNombre: string,
+  ): Promise<CalidadEvaluation> {
     const evaluacion = await this.calidadRepository.findOne({ where: { id } });
     if (!evaluacion) {
-      throw new NotFoundException(`La evaluación de calidad con ID ${id} no existe.`);
+      throw new NotFoundException(
+        `La evaluación de calidad con ID ${id} no existe.`,
+      );
     }
 
     const evaluacionEditada = this.calidadRepository.merge(evaluacion, {
@@ -105,10 +117,9 @@ export class CalidadService {
     return await this.calidadRepository.save(evaluacionEditada);
   }
 
-async findTableRecord():Promise<CalidadEvaluation[]>{
-  return await this.calidadRepository.find({
-    order:{fecha_evaluacion:'DESC'}
-  });
-}
-
+  async findTableRecord(): Promise<CalidadEvaluation[]> {
+    return await this.calidadRepository.find({
+      order: { fecha_evaluacion: 'DESC' },
+    });
+  }
 }

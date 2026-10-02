@@ -19,10 +19,15 @@ export class BodegaService {
    * Registra quién la evaluó (`evaluado_por`) y persiste los campos recibidos.
    */
 
-  async create(createBodegaDto: CreateBodegaDto, usuarioNombre: string): Promise<BodegaEvaluation> {
+  async create(
+    createBodegaDto: CreateBodegaDto,
+    usuarioNombre: string,
+  ): Promise<BodegaEvaluation> {
     const nuevaEvaluacion = this.bodegaRepository.create({
       ...createBodegaDto,
       evaluado_por: usuarioNombre,
+      // La columna no tiene DEFAULT en la BD, se rellena aquí.
+      fecha_ingreso: createBodegaDto.fecha_ingreso ?? new Date(),
     });
     return await this.bodegaRepository.save(nuevaEvaluacion);
   }
@@ -37,7 +42,7 @@ export class BodegaService {
           pro.nombre AS nombre_producto,
           su.nombre AS nombre_proveedor,
           po.id AS order_item_id,
-          po.cantidad,
+          po.cantidad::float8 AS cantidad,
           ev.fecha_ingreso,
           ev.limpieza,
           ev.equipo_proteccion,
@@ -52,7 +57,7 @@ export class BodegaService {
       INNER JOIN public.purchase_order_items AS po ON p.id = po.purchase_order_id
       INNER JOIN public.suppliers AS su ON p.supplier_id = su.id
       INNER JOIN public.products AS pro ON po.product_id = pro.id
-      RIGHT JOIN public.bodega_evaluations AS ev ON po.id = ev.purchase_order_item_id; -- 💡 Quitamos el WHERE po.id = :order_item_id
+      LEFT JOIN public.bodega_evaluations AS ev ON po.id = ev.purchase_order_item_id; -- 💡 Quitamos el WHERE po.id = :order_item_id
     `;
 
     // Ejecuta la consulta nativa masiva
@@ -73,8 +78,8 @@ export class BodegaService {
           pro.nombre AS nombre_producto,
           su.nombre AS nombre_proveedor,
           po.id AS order_item_id,
-          po.cantidad,
-          ev.cantidad_recibida,
+          po.cantidad::float8 AS cantidad,
+          ev.cantidad_recibida::float8 AS cantidad_recibida,
           ev.fecha_ingreso,
           ev.limpieza,
           ev.equipo_proteccion,
@@ -89,7 +94,7 @@ export class BodegaService {
       INNER JOIN public.purchase_order_items AS po ON p.id = po.purchase_order_id
       INNER JOIN public.suppliers AS su ON p.supplier_id = su.id
       INNER JOIN public.products AS pro ON po.product_id = pro.id
-      RIGHT JOIN public.bodega_evaluations AS ev ON po.id = ev.purchase_order_item_id
+      LEFT JOIN public.bodega_evaluations AS ev ON po.id = ev.purchase_order_item_id
       WHERE po.id = $1; -- 💡 Usamos $1 como parámetro seguro en PostgreSQL
     `;
 
@@ -98,19 +103,26 @@ export class BodegaService {
 
     // Si el query no retorna ninguna fila, significa que el order_item_id no existe en el sistema
     if (!resultado || resultado.length === 0) {
-      throw new NotFoundException(`No se encontró ningún ítem de orden de compra con el ID: ${orderItemId}`);
+      throw new NotFoundException(
+        `No se encontró ningún ítem de orden de compra con el ID: ${orderItemId}`,
+      );
     }
 
     // Retornamos el primer (y único) resultado encontrado
     return resultado[0];
   }
 
-
-  async update(id: string, updateBodegaDto: UpdateBodegaDto, usuarioNombre: string): Promise<BodegaEvaluation> {
+  async update(
+    id: string,
+    updateBodegaDto: UpdateBodegaDto,
+    usuarioNombre: string,
+  ): Promise<BodegaEvaluation> {
     // 1. Buscamos si la evaluación existe
     const evaluacion = await this.bodegaRepository.findOne({ where: { id } });
     if (!evaluacion) {
-      throw new NotFoundException(`La evaluación de bodega con ID ${id} no existe.`);
+      throw new NotFoundException(
+        `La evaluación de bodega con ID ${id} no existe.`,
+      );
     }
 
     // 2. Fusionamos los cambios y actualizamos quién editó por última vez
@@ -123,11 +135,9 @@ export class BodegaService {
     return await this.bodegaRepository.save(evaluacionEditada);
   }
 
-
   async findTableRecords(): Promise<BodegaEvaluation[]> {
-  return await this.bodegaRepository.find({
-    order: { fecha_ingreso: 'DESC' } // Ordenado desde la más reciente
-  });
-}
-
+    return await this.bodegaRepository.find({
+      order: { fecha_ingreso: 'DESC' }, // Ordenado desde la más reciente
+    });
+  }
 }
