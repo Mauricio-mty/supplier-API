@@ -6,6 +6,19 @@ import {
 } from 'typeorm';
 import { numericTransformer } from '../../../common/transformers/numeric.transformer';
 
+/**
+ * Estados posibles de una inspección de bodega.
+ *
+ * `Pendiente` representa una inspección parcial: el usuario abrió el formulario,
+ * cargó lo que pudo y decidió no cerrarla todavía. Convive con `revisado: false`.
+ */
+export enum EstadoCompletitud {
+  PENDIENTE = 'Pendiente',
+  COMPLETO = 'Completo',
+  INCOMPLETO = 'Incompleto',
+  EXCEDENTE = 'Excedente',
+}
+
 @Entity('bodega_evaluations', { schema: 'public' })
 export class BodegaEvaluation {
   @PrimaryGeneratedColumn('uuid')
@@ -36,7 +49,7 @@ export class BodegaEvaluation {
   cantidad_recibida!: number;
 
   @Column({ length: 50 })
-  estado_completitud!: 'Completo' | 'Incompleto' | 'Excedente';
+  estado_completitud!: EstadoCompletitud;
 
   @CreateDateColumn({
     type: 'timestamp with time zone',

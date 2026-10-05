@@ -9,6 +9,9 @@ import {
   IsDate,
 } from 'class-validator';
 import { Type } from 'class-transformer';
+import { EstadoCompletitud } from '../entities/bodega-evaluation.entity';
+
+export const ESTADOS_COMPLETITUD = Object.values(EstadoCompletitud);
 
 export class CreateBodegaDto {
   @IsUUID('4', {
@@ -36,11 +39,10 @@ export class CreateBodegaDto {
   libre_plagas!: boolean;
 
   @IsString({ message: 'El estado de completitud debe ser un texto' })
-  @IsIn(['Completo', 'Incompleto', 'Excedente'], {
-    message:
-      'El estado de completitud debe ser estrictamente: Completo, Incompleto o Excedente',
+  @IsIn(ESTADOS_COMPLETITUD, {
+    message: `El estado de completitud debe ser estrictamente: ${ESTADOS_COMPLETITUD.join(', ')}`,
   })
-  estado_completitud!: 'Completo' | 'Incompleto' | 'Excedente';
+  estado_completitud!: EstadoCompletitud;
 
   @IsOptional()
   @IsDate({ message: 'La fecha de ingreso debe ser una fecha válida' })

@@ -7,6 +7,7 @@ import {
   CumpleEntregaRango,
   NivelServicio,
 } from '../compras/entities/compras-evaluation.entity';
+import { EstadoCompletitud } from '../bodega/entities/bodega-evaluation.entity';
 
 /**
  * Fuente en memoria con las evaluaciones necesarias para calcular el rendimiento.
@@ -22,7 +23,7 @@ type PerformanceSourceRow = {
   identificacion_producto_ok: boolean | null;
   libre_plagas: boolean | null;
   embalaje_ok: boolean | null;
-  estado_completitud: 'Completo' | 'Incompleto' | 'Excedente' | null;
+  estado_completitud: EstadoCompletitud | null;
   cumple_calidad: boolean | null;
   cumple_norma: boolean | null;
   cumple_entrega: CumpleEntregaRango | null;
