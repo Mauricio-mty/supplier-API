@@ -1,6 +1,6 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository, DataSource } from 'typeorm';
+import { Repository, DataSource, Between, MoreThanOrEqual, LessThanOrEqual } from 'typeorm';
 import { Rendimiento } from './entities/rendimiento.entity';
 import { CreateRendimientoDTo } from './dto/create-rendimiento.dto';
 import {
@@ -80,10 +80,65 @@ export class RendimientosService {
   }
 
   /**
-   * Lista todos los rendimientos almacenados.
+   * Lista todos los rendimientos almacenados con filtros opcionales.
+   * Devuelve la vista enriquecida con información de orden, producto y proveedor.
    */
-  async getAll(): Promise<Rendimiento[]> {
-    return this.rendimientosRepository.find();
+  async getAll(filters?: {
+    proveedor_id?: string;
+    fecha_inicio?: string;
+    fecha_fin?: string;
+  }) {
+    const conditions: string[] = [];
+    const params: any[] = [];
+    let paramIndex = 1;
+
+    if (filters?.proveedor_id) {
+      conditions.push(`re.proveedor_id = $${paramIndex}`);
+      params.push(filters.proveedor_id);
+      paramIndex++;
+    }
+
+    if (filters?.fecha_inicio && filters?.fecha_fin) {
+      conditions.push(
+        `re.date_performance BETWEEN $${paramIndex} AND $${paramIndex + 1}`,
+      );
+      params.push(filters.fecha_inicio, filters.fecha_fin);
+      paramIndex += 2;
+    } else if (filters?.fecha_inicio) {
+      conditions.push(`re.date_performance >= $${paramIndex}`);
+      params.push(filters.fecha_inicio);
+      paramIndex++;
+    } else if (filters?.fecha_fin) {
+      conditions.push(`re.date_performance <= $${paramIndex}`);
+      params.push(filters.fecha_fin);
+      paramIndex++;
+    }
+
+    const whereClause =
+      conditions.length > 0 ? `WHERE ${conditions.join(' AND ')}` : '';
+
+    const query = `
+      SELECT
+        re.id,
+        re.proveedor_id,
+        po.numero_orden_compra,
+        pro.nombre as nombre_producto,
+        su.nombre as nombre_proveedor,
+        re.bodega_performance,
+        re.calidad_performance,
+        re.compras_performance,
+        re.total_performance,
+        re.date_performance
+      FROM public.rendimientos as re
+      INNER JOIN public.purchase_order_items as it ON re.purchase_order_item_id = it.id
+      INNER JOIN public.products as pro ON it.product_id = pro.id
+      INNER JOIN public.purchase_orders as po ON it.purchase_order_id = po.id
+      INNER JOIN public.suppliers as su ON re.proveedor_id = su.id
+      ${whereClause}
+      ORDER BY re.date_performance DESC
+    `;
+
+    return await this.dataSource.query(query, params);
   }
 
   /**
@@ -252,29 +307,14 @@ export class RendimientosService {
   }
 
   /**
-   * Consulta lista/tabla de rendimientos con información de joins.
-   *
-   * Usamos SQL nativo para controlar el join y los alias.
+   * @deprecated Usar getAll() con filtros. Se mantiene por compatibilidad.
    */
-  async getData() {
-    const query = `
-      SELECT
-        po.numero_orden_compra,
-        pro.nombre as nombre_producto,
-        su.nombre as nombre_proveedor,
-        re.bodega_performance,
-        re.calidad_performance,
-        re.compras_performance,
-        re.total_performance,
-        re.date_performance
-      FROM public.rendimientos as re
-      INNER JOIN public.purchase_order_items as it On re.purchase_order_item_id = it.id
-      INNER JOIN public.products as pro On it.product_id = pro.id
-      INNER JOIN public.purchase_orders as po On it.purchase_order_id = po.id
-      INNER JOIN public.suppliers as su On re.proveedor_id = su.id;
-    `;
-
-    return await this.dataSource.query(query);
+  async getData(filters?: {
+    proveedor_id?: string;
+    fecha_inicio?: string;
+    fecha_fin?: string;
+  }) {
+    return this.getAll(filters);
   }
 
   /**

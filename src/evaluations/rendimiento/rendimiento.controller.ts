@@ -6,6 +6,7 @@ import {
   Body,
   UseGuards,
   ParseUUIDPipe,
+  Query,
 } from '@nestjs/common';
 import { RendimientosService } from './rendimiento.service';
 import { CreateRendimientoDTo } from './dto/create-rendimiento.dto';
@@ -34,13 +35,29 @@ export class RendimientosController {
   }
 
   @Get()
-  async getAll(): Promise<Rendimiento[]> {
-    return this.rendimientosService.getAll();
+  async getAll(
+    @Query('proveedor_id') proveedor_id?: string,
+    @Query('fecha_inicio') fecha_inicio?: string,
+    @Query('fecha_fin') fecha_fin?: string,
+  ) {
+    return this.rendimientosService.getAll({
+      proveedor_id,
+      fecha_inicio,
+      fecha_fin,
+    });
   }
 
   @Get('data')
-  async getData() {
-    return this.rendimientosService.getData();
+  async getData(
+    @Query('proveedor_id') proveedor_id?: string,
+    @Query('fecha_inicio') fecha_inicio?: string,
+    @Query('fecha_fin') fecha_fin?: string,
+  ) {
+    return this.rendimientosService.getAll({
+      proveedor_id,
+      fecha_inicio,
+      fecha_fin,
+    });
   }
 
   @Get(':id')
