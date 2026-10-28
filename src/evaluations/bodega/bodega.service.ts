@@ -4,6 +4,7 @@ import { Repository, DataSource } from 'typeorm'; // 💡 Importamos DataSource
 import { BodegaEvaluation } from './entities/bodega-evaluation.entity';
 import { CreateBodegaDto } from './dto/create-bodega.dto';
 import { UpdateBodegaDto } from './dto/update-bodega.dto';
+import {RendimientosService} from '../rendimiento/rendimiento.service'; // 💡 Importamos el servicio de rendimiento para usarlo en la creación de evaluaciones
 
 @Injectable()
 export class BodegaService {
@@ -11,6 +12,7 @@ export class BodegaService {
     @InjectRepository(BodegaEvaluation)
     private readonly bodegaRepository: Repository<BodegaEvaluation>,
     private readonly dataSource: DataSource, // 💡 Inyectamos el DataSource global
+    private readonly rendimientosService: RendimientosService, // 💡 Inyectamos el servicio de rendimiento
   ) {}
 
   /**
@@ -120,27 +122,36 @@ export class BodegaService {
   }
 
   async update(
-    id: string,
-    updateBodegaDto: UpdateBodegaDto,
-    usuarioNombre: string,
-  ): Promise<BodegaEvaluation> {
-    // 1. Buscamos si la evaluación existe
-    const evaluacion = await this.bodegaRepository.findOne({ where: { id } });
-    if (!evaluacion) {
-      throw new NotFoundException(
-        `La evaluación de bodega con ID ${id} no existe.`,
-      );
-    }
-
-    // 2. Fusionamos los cambios and aktualizamos quién editó por última vez
-    const evaluacionEditada = this.bodegaRepository.merge(evaluacion, {
-      ...updateBodegaDto,
-      evaluado_por: usuarioNombre, // Queda registrado quién hizo la última modificación
-    });
-
-    // 3. Guardamos en la base de datos
-    return await this.bodegaRepository.save(evaluacionEditada);
+  id: string,
+  updateBodegaDto: UpdateBodegaDto,
+  usuarioNombre: string,
+): Promise<BodegaEvaluation> {
+  // 1. Buscamos si la evaluación existe
+  const evaluacion = await this.bodegaRepository.findOne({ where: { id } });
+  if (!evaluacion) {
+    throw new NotFoundException(
+      `La evaluación de bodega con ID ${id} no existe.`,
+    );
   }
+
+  // 2. Fusionamos los cambios y actualizamos quién editó por última vez
+  const evaluacionEditada = this.bodegaRepository.merge(evaluacion, {
+    ...updateBodegaDto,
+    evaluado_por: usuarioNombre, // Queda registrado quién hizo la última modificación
+  });
+
+  // 3. Guardamos en la base de datos
+  const evaluacionGuardada = await this.bodegaRepository.save(evaluacionEditada);
+
+  // 🚀 4. Disparamos el recálculo del rendimiento para este ítem
+  // Esto actualizará automáticamente el score del proveedor
+  await this.rendimientosService.createFromOrderItemId(
+    evaluacionGuardada.purchase_order_item_id,
+  );
+
+  // 5. Retornamos la evaluación guardada
+  return evaluacionGuardada;
+}
 
   async findTableRecords(): Promise<BodegaEvaluation[]> {
     return await this.bodegaRepository.find({
