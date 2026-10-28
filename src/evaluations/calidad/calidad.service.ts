@@ -4,6 +4,7 @@ import { Repository, DataSource } from 'typeorm';
 import { CalidadEvaluation } from './entities/calidad-evaluation.entity';
 import { CreateCalidadDto } from './dto/create-calidad.dto';
 import { UpdateCalidadDto } from './dto/update-calidad.dto';
+import {RendimientosService} from '../rendimiento/rendimiento.service';
 
 @Injectable()
 export class CalidadService {
@@ -11,6 +12,7 @@ export class CalidadService {
     @InjectRepository(CalidadEvaluation)
     private readonly calidadRepository: Repository<CalidadEvaluation>,
     private readonly dataSource: DataSource,
+    private readonly rendimientosService: RendimientosService,
   ) {}
 
   /**
@@ -97,11 +99,12 @@ export class CalidadService {
     return resultado[0];
   }
 
-  async update(
+    async update(
     id: string,
     updateCalidadDto: UpdateCalidadDto,
     usuarioNombre: string,
   ): Promise<CalidadEvaluation> {
+    // 1. Buscamos si la evaluación existe
     const evaluacion = await this.calidadRepository.findOne({ where: { id } });
     if (!evaluacion) {
       throw new NotFoundException(
@@ -109,12 +112,21 @@ export class CalidadService {
       );
     }
 
+    // 2. Fusionamos los cambios y actualizamos quién editó por última vez
     const evaluacionEditada = this.calidadRepository.merge(evaluacion, {
       ...updateCalidadDto,
       evaluado_por: usuarioNombre,
     });
 
-    return await this.calidadRepository.save(evaluacionEditada);
+    // 3. Guardamos en la base de datos
+    const guardado = await this.calidadRepository.save(evaluacionEditada);
+
+    // 🚀 4. Disparamos el recálculo del rendimiento para este ítem
+    // Esto actualizará automáticamente el score del proveedor con los nuevos datos de calidad
+    await this.rendimientosService.createFromOrderItemId(guardado.purchase_order_item_id);
+
+    // 5. Retornamos la evaluación guardada
+    return guardado;
   }
 
   async findTableRecord(): Promise<CalidadEvaluation[]> {
