@@ -35,31 +35,33 @@ export class BodegaService {
   async findAllOrdersAndEvaluations() {
     const query = `
       SELECT 
-      ev.id AS bodega_evaluation_id,
-          p.numero_orden_compra,
-          p.fecha_entrega_prevista,
-          pro.codigo AS codigo_producto,
-          pro.nombre AS nombre_producto,
-          pro.categoria,
-          su.nombre AS nombre_proveedor,
-po.id AS order_item_id,
-      po.cantidad::float8 AS cantidad,
-      ev.cantidad_recibida::float8 AS cantidad_recibida,
-      ev.fecha_ingreso,
-          ev.limpieza,
-          ev.equipo_proteccion,
-          ev.identificacion_producto_ok,
-          ev.libre_plagas,
-          ev.estado_completitud,
-          ev.tiene_fecha_vencimiento,
-          ev.embalaje_ok,
-          ev.ingreso_aprobado,
-          ev.revisado
+        ev.id AS bodega_evaluation_id,
+        p.numero_orden_compra,
+        p.fecha_entrega_prevista,
+        pro.codigo AS codigo_producto,
+        pro.nombre AS nombre_producto,
+        cat.nombre AS categoria,
+        su.nombre AS nombre_proveedor,
+        po.id AS order_item_id,
+        po.cantidad::float8 AS cantidad,
+        ev.cantidad_recibida::float8 AS cantidad_recibida,
+        ev.fecha_ingreso,
+        ev.limpieza,
+        ev.equipo_proteccion,
+        ev.identificacion_producto_ok,
+        ev.libre_plagas,
+        ev.estado_completitud,
+        ev.tiene_fecha_vencimiento,
+        ev.embalaje_ok,
+        ev.ingreso_aprobado,
+        ev.revisado
       FROM public.purchase_orders AS p
       INNER JOIN public.purchase_order_items AS po ON p.id = po.purchase_order_id
       INNER JOIN public.suppliers AS su ON p.supplier_id = su.id
       INNER JOIN public.products AS pro ON po.product_id = pro.id
-      LEFT JOIN public.bodega_evaluations AS ev ON po.id = ev.purchase_order_item_id; -- 💡 Quitamos el WHERE po.id = :order_item_id
+      LEFT JOIN public.requisitions AS r ON r.id = p.requisition_id
+      LEFT JOIN public.categories AS cat ON cat.id = r.category_id
+      LEFT JOIN public.bodega_evaluations AS ev ON po.id = ev.purchase_order_item_id;
     `;
 
     // Ejecuta la consulta nativa masiva
@@ -78,7 +80,7 @@ po.id AS order_item_id,
           p.fecha_entrega_prevista,
           pro.codigo AS codigo_producto,
           pro.nombre AS nombre_producto,
-          pro.categoria,
+          cat.nombre AS categoria,
           su.nombre AS nombre_proveedor,
           po.id AS order_item_id,
           po.cantidad::float8 AS cantidad,
@@ -97,17 +99,19 @@ po.id AS order_item_id,
       INNER JOIN public.purchase_order_items AS po ON p.id = po.purchase_order_id
       INNER JOIN public.suppliers AS su ON p.supplier_id = su.id
       INNER JOIN public.products AS pro ON po.product_id = pro.id
+      LEFT JOIN public.requisitions AS r ON r.id = p.requisition_id
+      LEFT JOIN public.categories AS cat ON cat.id = r.category_id
       LEFT JOIN public.bodega_evaluations AS ev ON po.id = ev.purchase_order_item_id
       WHERE po.id = $1; -- 💡 Usamos $1 como parámetro seguro en PostgreSQL
     `;
 
-    // Ejecutamos el query pasando el UUID en el arreglo de parámetros
+    // Ejecutamos the query pasando el UUID in the arreglo de parámetros
     const resultado = await this.dataSource.query(query, [orderItemId]);
 
-    // Si el query no retorna ninguna fila, significa que el order_item_id no existe en el sistema
+    // Si the query no retorna ninguna fila, significa que el order_item_id no existe in the system
     if (!resultado || resultado.length === 0) {
       throw new NotFoundException(
-        `No se encontró ningún ítem de orden de compra con el ID: ${orderItemId}`,
+        `No se encontró ningún ítem de orden de compra con the ID: ${orderItemId}`,
       );
     }
 
@@ -128,7 +132,7 @@ po.id AS order_item_id,
       );
     }
 
-    // 2. Fusionamos los cambios y actualizamos quién editó por última vez
+    // 2. Fusionamos los cambios and aktualizamos quién editó por última vez
     const evaluacionEditada = this.bodegaRepository.merge(evaluacion, {
       ...updateBodegaDto,
       evaluado_por: usuarioNombre, // Queda registrado quién hizo la última modificación
